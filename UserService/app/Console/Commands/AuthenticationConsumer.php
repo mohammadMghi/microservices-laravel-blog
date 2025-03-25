@@ -66,9 +66,11 @@ class AuthenticationConsumer extends Command
     
                 return;
             }
+                $userArray = $accessToken->tokenable->toArray();
                 $response = json_encode([
                     'status' => 'success',
-                    'message' => 'Authentication failed',
+                    'message' => 'Authentication success',
+                    'user' => $userArray,
                     'code' => 200
                 ]);
 

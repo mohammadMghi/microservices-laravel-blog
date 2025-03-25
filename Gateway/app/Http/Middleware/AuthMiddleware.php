@@ -57,7 +57,9 @@ class AuthMiddleware
 
         $channel->close();
         $connection->close();
-       
+         
+        $request->merge(['auth_user' => $response['user']]);
+
         if (!$response || $response['status'] !== 'success') {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
