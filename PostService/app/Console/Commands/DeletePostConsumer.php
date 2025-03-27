@@ -8,28 +8,41 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use Validator;
 
-class CreatePostConsumer extends Command
+class DeletePostConsumer extends Command
 {
-    protected $signature = 'rabbitmq:create-post-consume';
-    protected $description = 'Consume post messages from RabbitMQ';
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'app:delete-post-consumer';
 
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
+
+    /**
+     * Execute the console command.
+     */
     public function handle()
     {
         $connection = new AMQPStreamConnection('127.0.0.1', 5672, 'guest', 'guest');
         $channel = $connection->channel();
 
-        $channel->queue_declare('create_post_queue', false, true, false, false);
+        $channel->queue_declare('delete_post_queue', false, true, false, false);
 
         echo " [*] Waiting for messages. To exit, press CTRL+C\n";
 
         $callback = function (AMQPMessage $msg) use ($channel) {
             $data = json_decode($msg->body, true);
       
-            echo " [x] Received Create Post Request: " . $data['title'] . "\n";
+            echo " [x] Received DELETE Post Request: " . $data['id'] . "\n";
       
             $validator = Validator::make($data , [ 
-                'title' => 'required|string',
-                'content' => 'required|string'
+                'id' => 'required|exists:posts,id',
             ]);
 
             if($validator->fails())
@@ -51,18 +64,12 @@ class CreatePostConsumer extends Command
                 return;
             }
  
-            $post = new Post();
-
-            $post->title = $data['title'];
-            
-            $post->content = $data['content'];
-
-            $post->user_id = $data['user_id'];
-
-            $post->save();
+            $post = Post::where('id' , $data['id'])->where('user_id' , $data['user_id'])->first();
+ 
+            $post->delete();
             
             $response = json_encode([
-                'status' => 'Post created successfully',
+                'status' => 'Post deleted successfully',
                 'code' => 200
             ]);
 
@@ -72,10 +79,10 @@ class CreatePostConsumer extends Command
 
             $channel->basic_publish($responseMsg,'' ,$msg->get('reply_to'));
            
-            echo " [~] Post Created: " . "\n";
+            echo " [~] Post Deleted: " . "\n";
         };
 
-        $channel->basic_consume('create_post_queue', '', false, true, false, false, $callback);
+        $channel->basic_consume('delete_post_queue', '', false, true, false, false, $callback);
 
         while ($channel->is_consuming()) {
             $channel->wait();
@@ -85,4 +92,3 @@ class CreatePostConsumer extends Command
         $connection->close();
     }
 }
-

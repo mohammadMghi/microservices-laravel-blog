@@ -1,8 +1,9 @@
 <?php
 
 use App\Http\Controllers\V1\Auth\LoginController;
-use App\Http\Controllers\V1\Auth\RegisterController;
+use App\Http\Controllers\V1\Auth\RegisterController;  
 use App\Http\Controllers\V1\Post\CreatePostController;
+use App\Http\Controllers\V1\Post\DeletePostController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,3 +15,4 @@ Route::post('/register' , [RegisterController::class , 'handler']);
 Route::post('/login' , [LoginController::class , 'handler']);
 
 Route::post('/posts' , [CreatePostController::class , 'handler'])->middleware('authentication');
+Route::delete('/posts/{id}' , [DeletePostController::class , 'handler'])->middleware('authentication');

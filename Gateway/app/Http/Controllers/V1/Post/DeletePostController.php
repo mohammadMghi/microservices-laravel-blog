@@ -7,17 +7,16 @@ use App\Services\RabbitMQ\RabbitMQPublisher;
 use Illuminate\Http\Request;
 use App\Http\Builders\JsonResponseBuilder;
 
-class CreatePostController extends Controller
+class DeletePostController extends Controller
 {
-    public function handler(Request $request)
+    public function handler(Request $request,$id)
     {
         $publisher = new RabbitMQPublisher();
  
         $response = $publisher->publish([
-            'title' => $request->title,
-            'content' => $request->content, 
-            'user_id' => $request->auth_user['id']
-        ] , 'create_post_queue');
+            'id' => $id,
+            'user_id' => $request->auth_user['id'], 
+        ] , 'delete_post_queue');
 
         $publisher->close();
        
